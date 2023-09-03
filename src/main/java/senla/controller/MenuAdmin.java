@@ -181,7 +181,7 @@ public class MenuAdmin {
                 System.out.println("Введите цену за билет:");
                 Double price = Double.valueOf(scanner.nextLine());
 
-                Ticket ticket = new Ticket(null, eventId, price, place, false);
+                Ticket ticket = new Ticket(0, eventId, price, place, 0);
                 ticketService.createTicket(ticket);
 
             } else if (step.equals("14")) {

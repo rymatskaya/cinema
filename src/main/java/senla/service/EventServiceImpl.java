@@ -1,9 +1,8 @@
 package senla.service;
 
 import senla.model.Event;
-import senla.model.Movie;
+import senla.model.EventList;
 import senla.repository.EventRepository;
-import senla.repository.MovieRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +21,8 @@ public class EventServiceImpl implements  EventService {
     public Optional<Event> getEventById(Integer eventId) {return eventRepository.getEventById(eventId);}
     @Override
     public List<Event> getAllEvents()  {return eventRepository.getAllEvents();}
+    @Override
+    public List<EventList> getAllEventsFull() {return eventRepository.getAllEventsFull();}
     @Override
     public boolean updateEvent(Integer evenId, Integer movieId, LocalDateTime movieDateTime) {
         return eventRepository.updateEvent(evenId, movieId, movieDateTime);

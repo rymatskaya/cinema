@@ -1,6 +1,7 @@
 package senla.repository;
 
 import senla.model.Event;
+import senla.model.EventList;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,4 +15,5 @@ public interface EventRepository {
     boolean checkEventByMovieAndTime(Integer idMovie, LocalDateTime eventDateTime);
     Optional<Event> getEventById(Integer eventId);
     List<Event> getAllEvents() ;
+    List<EventList> getAllEventsFull() ;
 }

@@ -2,8 +2,12 @@ package senla.controller;
 
 import senla.model.User;
 import senla.model.UserRole;
+import senla.repository.EventRepository;
+import senla.repository.EventRepositoryImpl;
 import senla.repository.UserRepository;
 import senla.repository.UserRepositoryImpl;
+import senla.service.EventService;
+import senla.service.EventServiceImpl;
 import senla.service.UserService;
 import senla.service.UserServiceImpl;
 
@@ -15,9 +19,13 @@ import java.util.Scanner;
 public class GlobalController {
     private static Scanner scanner = new Scanner(System.in);
 
+    public static User user;
+
     public static void start() {
         UserRepository userRepository = new UserRepositoryImpl();
         UserService userService = new UserServiceImpl(userRepository);
+        EventRepository eventRepository = new EventRepositoryImpl();
+        EventService eventService = new EventServiceImpl(eventRepository);
 
         while (true) {
 
@@ -50,7 +58,7 @@ public class GlobalController {
                     System.out.println("Введите пароль:");
                     String password = scanner.nextLine();
                     System.out.println("Вывод меню в зависимости от роли");
-                    User user = userService.getUserByLoginPassword(username, password)
+                    user = userService.getUserByLoginPassword(username, password)
                             .orElseThrow(() -> new RuntimeException(String.format("Пользователя " +
                                     "с логином %s и паролем %s не найдено ", username, password)));
 
@@ -64,7 +72,7 @@ public class GlobalController {
 
                 case "3" -> {
                     System.out.println("Просмотр мероприятий");
-
+                    eventService.getAllEventsFull().forEach(System.out::println);
                 }
                 case "0" -> {
                     System.out.println("Выход");

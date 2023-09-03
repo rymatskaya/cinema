@@ -1,6 +1,7 @@
 package senla.repository;
 
 import senla.model.Event;
+import senla.model.EventList;
 import senla.model.Movie;
 import senla.util.ConnectionManager;
 
@@ -174,9 +175,26 @@ public class EventRepositoryImpl implements EventRepository {
             throw new RuntimeException(e);
         }
     }
-//    boolean updateEvent(Integer evenId, Integer movieId, LocalDateTime movieDateTime);
-//    boolean deleteEvent(Integer id) ;
-//    boolean checkEventById(Integer Id);
-//    Optional<Event> getEventById(Integer eventId);
-//    List<Event> getAllEvents() ;
+
+    @Override
+    public List<EventList> getAllEventsFull() {
+        List<EventList> events = new ArrayList<>();
+        try (Connection connection = ConnectionManager.open()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT eventId, Title, MovieDateTime" +
+                    " FROM event INNER JOIN movie on event.movieId=movie.movieId");
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String EventId = resultSet.getString("EventId");
+                String Movie = resultSet.getString("Title");
+                String MovieDateTime = resultSet.getString("MovieDateTime");
+                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime parse = LocalDateTime.parse(MovieDateTime, formatter);
+                EventList event = new EventList(Integer.valueOf(EventId), Movie, parse);
+                events.add(event);
+            }
+            return events;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

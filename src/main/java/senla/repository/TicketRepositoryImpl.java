@@ -1,8 +1,7 @@
 package senla.repository;
 
-import senla.model.Event;
-import senla.model.Movie;
 import senla.model.Ticket;
+import senla.model.TicketList;
 import senla.util.ConnectionManager;
 
 import java.sql.Connection;
@@ -49,7 +48,7 @@ public class TicketRepositoryImpl implements TicketRepository{
     public boolean checkTicketByEventAndPlace(Integer idEvent, String place) {
         try (Connection connection = ConnectionManager.open()) {
 
-            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ticket WHERE userId=? " +
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ticket WHERE eventId=? " +
                     "and place=?");
             statement.setString(1, String.valueOf(idEvent));
             statement.setString(2, String.valueOf(place));
@@ -60,7 +59,7 @@ public class TicketRepositoryImpl implements TicketRepository{
             }
             System.out.println("i=" + i);
             if (i != 0) {
-                System.out.printf("Билет с таким местом %s на этот сеанс  существует!", place);
+                System.out.printf("Билет с таким местом %s на этот сеанс существует!", place);
                 return true;
             } else return false;
         } catch (SQLException e) {
@@ -81,7 +80,7 @@ public class TicketRepositoryImpl implements TicketRepository{
                 statement.setString(1, String.valueOf(eventId));
                 statement.setString(2, place);
                 statement.setString(3, String.valueOf(price));
-                statement.setString(3, String.valueOf(ticketId));
+                statement.setString(4, String.valueOf(ticketId));
                 statement.executeUpdate();
                 System.out.println("Билет успешно обновлен!");
                 return true;
@@ -94,6 +93,80 @@ public class TicketRepositoryImpl implements TicketRepository{
         return false;
     }
 
+    @Override
+    public boolean buyTicket(Integer eventId, String place, Integer userId) {
+        boolean IsNotExistsTicket = checkTicketByEventAndPlace(eventId, place);
+       // System.out.println("IsNotExistsTicket=" + IsNotExistsTicket);
+        Ticket ticket=getTicketByPlaceAndEvent(place, eventId);
+
+        boolean IsNotSoldTicket = checkTicketBySold(ticket.getTicketId());
+       // System.out.println("IsNotSoldTicket=" + IsNotExistsTicket);
+
+        try (Connection connection = ConnectionManager.open()) {
+            if (IsNotExistsTicket == true && IsNotSoldTicket == false) {
+                PreparedStatement statement = connection.prepareStatement("UPDATE ticket set  " +
+                        "sold=1, userId=?  where ticketId=?");
+                statement.setString(1, String.valueOf(userId));
+                statement.setString(2, String.valueOf(ticket.getTicketId()));
+                statement.executeUpdate();
+                System.out.println("Билет куплен!");
+                return true;
+            } else
+                throw new RuntimeException(String.format("Что-то пошло не так. Билет с местом %s не куплен",
+                        place));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean returnTicket(Integer eventId, String place, Integer userId) {
+        boolean IsNotExistsTicket = checkTicketByEventAndPlace(eventId, place);
+       Ticket ticket=getTicketByPlaceAndEvent(place, eventId);
+
+        boolean IsNotSoldTicket = checkTicketBySold(ticket.getTicketId());
+
+
+        try (Connection connection = ConnectionManager.open()) {
+            if (IsNotExistsTicket == true && IsNotSoldTicket == true) {
+                PreparedStatement statement = connection.prepareStatement("UPDATE ticket set  " +
+                        "sold=0, userId=?  where ticketId=? and userId=?");
+                statement.setString(1, null);
+                statement.setString(2, String.valueOf(ticket.getTicketId()));
+                statement.setString(3, String.valueOf(userId));
+                statement.executeUpdate();
+                System.out.println("Билет возвращен!");
+                return true;
+            } else
+                throw new RuntimeException(String.format("Что-то пошло не так. Билет с местом %s не куплен",
+                        place));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkTicketBySold(Integer Id) {
+
+        try (Connection connection = ConnectionManager.open()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ticket WHERE ticketId=?" +
+                    " AND sold=1");
+            statement.setString(1, String.valueOf(Id));
+            ResultSet resultSet = statement.executeQuery();
+            int i = 0;
+            while (resultSet.next()) {
+                i++;
+            }
+            if (i != 0) {
+                return true;
+            } else return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     @Override
     public Optional<Ticket> getTicketById(Integer ticketId) {
         Optional<Ticket> ticket;
@@ -110,7 +183,7 @@ public class TicketRepositoryImpl implements TicketRepository{
                 entity.setUserId(resultSet.getInt("userId"));
                 entity.setPrice(resultSet.getDouble("price"));
                 entity.setPlace(resultSet.getString("place"));
-                entity.setSold(resultSet.getBoolean("sold"));
+                entity.setSold(resultSet.getInt("sold"));
                 ticket = Optional.of(entity);
                 return ticket;
             }
@@ -121,6 +194,34 @@ public class TicketRepositoryImpl implements TicketRepository{
         return Optional.empty();
     }
 
+    @Override
+    public Ticket getTicketByPlaceAndEvent(String place, Integer eventId) {
+        Ticket ticket;
+
+        try (Connection connection = ConnectionManager.open()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ticket WHERE eventId=?" +
+                    " AND UPPER(place) like UPPER(?)");
+            statement.setInt(1,eventId);
+            statement.setString(2, place);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                Ticket entity = new Ticket();
+                entity.setTicketId(resultSet.getInt("ticketId"));
+                entity.setEventId(resultSet.getInt("eventId"));
+                entity.setUserId(resultSet.getInt("userId"));
+                entity.setPrice(resultSet.getDouble("price"));
+                entity.setPlace(resultSet.getString("place"));
+                entity.setSold(resultSet.getInt("sold"));
+                ticket = entity;
+                return ticket;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
     @Override
     public boolean deleteTicket(Integer id) {
         boolean IsNotExistsTicket = checkTicketById(id);
@@ -176,7 +277,39 @@ public class TicketRepositoryImpl implements TicketRepository{
                 String sold = resultSet.getString("sold");
                 String place = resultSet.getString("place");
                 Ticket ticket = new Ticket(Integer.valueOf(TicketId), Integer.valueOf(userId), Integer.valueOf(eventId),
-                                            Double.valueOf(price), Boolean.valueOf(sold),place);
+                                            Double.valueOf(price), Integer.valueOf(sold),place);
+                tickets.add(ticket);
+            }
+            return tickets;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<TicketList> getUserTickets(Integer userId) {
+        List<TicketList> tickets = new ArrayList<>();
+        try (Connection connection = ConnectionManager.open()) {
+            PreparedStatement statement = connection.prepareStatement("SELECT event.MovieDateTime, " +
+                    "movie.Title, ticket.place, ticket.price, ticket.ticketId, ticket.eventId FROM event " +
+                    "inner join ticket on event.eventId=ticket.eventId " +
+                    "inner join movie on event.movieId=movie.movieId " +
+                    "where userId=?");
+            statement.setString(1, String.valueOf(userId));
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String TicketId = resultSet.getString("ticketId");
+                Integer idUser = userId;
+                String eventId = resultSet.getString("eventId");
+                String price = resultSet.getString("price");
+                String sold = String.valueOf(1);
+                String movie = resultSet.getString("Title");;
+                String place = resultSet.getString("place");
+                String MovieDateTime = resultSet.getString("MovieDateTime");
+                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime parse = LocalDateTime.parse(MovieDateTime, formatter);
+                TicketList ticket = new TicketList(Integer.valueOf(eventId) , userId, movie, place,
+                        Double.valueOf(price), parse);
                 tickets.add(ticket);
             }
             return tickets;

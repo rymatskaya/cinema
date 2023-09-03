@@ -1,17 +1,15 @@
 package senla.model;
 
-import java.util.UUID;
-
 public class Ticket {
     private Integer ticketId;
     private Integer userId;
     private Integer eventId;
     private Double price;
-    private boolean sold;
+    private int sold;
 
     private String place;
 
-    public Ticket(Integer userId, Integer eventId, Double price, String place, boolean sold) {
+    public Ticket(Integer userId, Integer eventId, Double price, String place, int sold) {
         this.userId = userId;
         this.eventId = eventId;
         this.price = price;
@@ -51,11 +49,9 @@ public class Ticket {
         this.price = price;
     }
 
-    public boolean isSold() {
-        return sold;
-    }
+    public int isSold() {      return sold;   }
 
-    public void setSold(boolean sold) {
+    public void setSold(int sold) {
         this.sold = sold;
     }
 
@@ -69,18 +65,17 @@ public class Ticket {
 
     @Override
     public String toString() {
-        return "Ticket: " +
-                "userId=" + userId +
-                ", eventId=" + eventId +
-                ", price=" + price +
-                ", sold=" + sold +
-                '}';
+        return "Билет : " +
+                " код пользователя = " + userId +
+                ", код сеанса = " + eventId +
+                ", цена = " + price +
+                ", продано = " + sold ;
     }
 
     public Ticket() {
     }
 
-    public Ticket(Integer ticketId, Integer userId, Integer eventId, Double price, boolean sold, String place) {
+    public Ticket(Integer ticketId, Integer userId, Integer eventId, Double price, int sold, String place) {
         this.ticketId = ticketId;
         this.userId = userId;
         this.eventId = eventId;
