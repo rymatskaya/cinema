@@ -3,13 +3,16 @@ package senla.repository;
 import senla.model.User;
 import senla.model.UserRole;
 import senla.util.ConnectionManager;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static senla.util.SecurityUtil.passwordEncoder;
+
+
 public class UserRepositoryImpl implements UserRepository {
+
     @Override
     public Optional<User> getUserById(Integer userId) {
         Optional<User> user;
@@ -43,18 +46,20 @@ public class UserRepositoryImpl implements UserRepository {
         try (Connection connection = ConnectionManager.open()) {
 
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM person WHERE " +
-                    "username=? and password=?");
+                    "username=?");
             statement.setString(1, username);
-            statement.setString(2, password);
             ResultSet resultSet = statement.executeQuery();
+
             if (resultSet.next()) {
-                User entity = new User();
-                entity.setId(resultSet.getInt("id"));
-                entity.setUsername(resultSet.getString("username"));
-                entity.setPassword(resultSet.getString("password"));
-                entity.setRole(UserRole.valueOf(resultSet.getString("role")));
-                user = Optional.of(entity);
-                return user;
+                if (passwordEncoder.matches(password, resultSet.getString("password"))) {
+                    User entity = new User();
+                    entity.setId(resultSet.getInt("id"));
+                    entity.setUsername(resultSet.getString("username"));
+                    entity.setPassword(resultSet.getString("password"));
+                    entity.setRole(UserRole.valueOf(resultSet.getString("role")));
+                    user = Optional.of(entity);
+                    return user;
+                }
             }
 
         } catch (SQLException e) {
@@ -86,6 +91,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean checkUserByLogin(String username) {
+
         try (Connection connection = ConnectionManager.open()) {
 
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM person WHERE " +
@@ -131,20 +137,19 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean checkUserByLoginPassword(String username, String password) {
+
         try (Connection connection = ConnectionManager.open()) {
 
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM person WHERE " +
                     "username=? and password=?");
             statement.setString(1, username);
-            statement.setString(2, password);
+
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
+            if (resultSet.next()) {
+                if (passwordEncoder.matches(password, resultSet.getString("password"))) {
+                    return true;
+                }
             }
-            if (i != 0) {
-                return true;
-            } else return false;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -155,19 +160,15 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean create(User user) {
         String username = user.getUsername();
         boolean IsNotExistsUser = checkUserByLogin(username);
-        System.out.println("IsNotExistsUser=" + IsNotExistsUser);
-        /*String url = "jdbc:mysql://127.0.0.1:3307/cinema";
-        String username = "root";
-        String password = "root";*/
-        try (Connection connection = ConnectionManager.open()) {
+        //System.out.println("IsNotExistsUser=" + IsNotExistsUser);
+       try (Connection connection = ConnectionManager.open()) {
 
-            //   PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email) " +
-            //           "VALUES ('Alex','1221','emailTest@mail.com')");
             if (IsNotExistsUser == false) {
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email, role) " +
                         "VALUES (?,?,?,?)");
                 statement.setString(1, user.getUsername());
-                statement.setString(2, user.getPassword());
+                String encodedPassword = passwordEncoder.encode(user.getPassword());
+                statement.setString(2, encodedPassword);
                 statement.setString(3, user.getEmail());
                 statement.setString(4, UserRole.USER.name());
                 statement.execute();
@@ -196,7 +197,9 @@ public class UserRepositoryImpl implements UserRepository {
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email, role) " +
                         "VALUES (?,?,?,?)");
                 statement.setString(1, user.getUsername());
-                statement.setString(2, user.getPassword());
+                //statement.setString(2, user.getPassword());
+                String encodedPassword = passwordEncoder.encode(user.getPassword());
+                statement.setString(2, encodedPassword);
                 statement.setString(3, user.getEmail());
                 statement.setString(4, String.valueOf(user.getRole()));
                 statement.execute();
@@ -223,7 +226,9 @@ public class UserRepositoryImpl implements UserRepository {
                         "password=?, email=?, role=? where id=? ");
 
                 statement.setString(1, username);
-                statement.setString(2, password);
+                String encodedPassword = passwordEncoder.encode(password);
+                statement.setString(2, encodedPassword);
+                //statement.setString(2, password);
                 statement.setString(3, email);
                 try {
                     statement.setString(4, String.valueOf(role));

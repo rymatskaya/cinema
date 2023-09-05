@@ -1,5 +1,6 @@
 package senla.controller;
 
+import lombok.SneakyThrows;
 import senla.model.User;
 import senla.model.UserRole;
 import senla.repository.EventRepository;
@@ -10,17 +11,19 @@ import senla.service.EventService;
 import senla.service.EventServiceImpl;
 import senla.service.UserService;
 import senla.service.UserServiceImpl;
+import senla.util.PasswordsHider;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.io.*;
 
 public class GlobalController {
     private static Scanner scanner = new Scanner(System.in);
 
     public static User user;
 
+    @SneakyThrows
     public static void start() {
         UserRepository userRepository = new UserRepositoryImpl();
         UserService userService = new UserServiceImpl(userRepository);
@@ -57,6 +60,14 @@ public class GlobalController {
                     String username = scanner.nextLine();
                     System.out.println("Введите пароль:");
                     String password = scanner.nextLine();
+//                    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+//                    System.out.print("Enter username: ");
+//                    String username = in.readLine();
+//                    Thread hide = new PasswordsHider("Enter password: ");
+//                    hide.start();
+//                    String password = in.readLine();
+//                    hide.interrupt();
+
                     System.out.println("Вывод меню в зависимости от роли");
                     user = userService.getUserByLoginPassword(username, password)
                             .orElseThrow(() -> new RuntimeException(String.format("Пользователя " +
@@ -64,7 +75,7 @@ public class GlobalController {
 
                     switch (user.getRole()) {
                         case USER -> MenuUser.menuUser();
-                        case MANAGER -> System.out.println("Вывод меню менеджера");
+                        case MANAGER -> MenuManager.MenuManager();
                         case ADMIN -> MenuAdmin.menuAdmin();
                     }
 
@@ -82,4 +93,6 @@ public class GlobalController {
             }
         }
     }
+
+
 }

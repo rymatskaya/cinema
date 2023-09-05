@@ -41,10 +41,10 @@ public class MovieRepositoryImpl implements MovieRepository {
     public boolean updateMovie(Integer movieId, String title) {
 
         boolean IsNotExistsMovie = checkMovieByTitle(title);
-        System.out.println("IsNotExistsMovie=" + IsNotExistsMovie);
+        //System.out.println("IsNotExistsMovie=" + IsNotExistsMovie);
 
         try (Connection connection = ConnectionManager.open()) {
-            if (IsNotExistsMovie == true) {
+            if (IsNotExistsMovie == false) {
                 PreparedStatement statement = connection.prepareStatement("UPDATE movie set Title=? where MovieId=?");
                 statement.setString(1, title);
                 statement.setString(2, String.valueOf(movieId));
@@ -70,7 +70,7 @@ public class MovieRepositoryImpl implements MovieRepository {
             while (resultSet.next()) {
                 i++;
             }
-            System.out.println("i="+i);
+            //System.out.println("i="+i);
             if (i != 0) {
                 System.out.printf("Фильм с таким названием %s существует!", title);
                 return true;
