@@ -1,13 +1,15 @@
 package senla.controller;
 
-import senla.model.User;
+import lombok.extern.slf4j.Slf4j;
+import senla.controller.helper.Constants;
 import senla.repository.*;
 import senla.service.*;
-import senla.controller.GlobalController;
 
 import java.util.Scanner;
 
 import static senla.controller.GlobalController.user;
+
+@Slf4j
 
 public class MenuUser {
     private static Scanner scanner = new Scanner(System.in);
@@ -21,51 +23,61 @@ public class MenuUser {
         UserService userService = new UserServiceImpl(userRepository);
 
         while (true) {
-            String str = """
-                     1 - Просмотр мероприятий
-                     2 - Купить билет
-                     3 - Вернуть билет
-                     4 - Просмотреть купленные билеты
-                     0 - Вернуться в главное меню                   
-                                        
-                    """;
-            System.out.println(str);
-            System.out.print("Выберите вариант меню: ");
+            System.out.println(Constants.USER_MENU);
+            System.out.print(Constants.CHOISE);
             String step = scanner.nextLine();
 
             if (step.equals("1")) {
-                System.out.println("Просмотр мероприятий");
+                System.out.println(Constants.VIEW_EVENTS);
                 eventService.getAllEventsFull().forEach(System.out::println);
             } else if (step.equals("2")) {
-                System.out.println("Покупка билета");
-                System.out.println("Выберите мероприятие и введите его номер");
+                System.out.println(Constants.BUY_TICKET);
+                System.out.println(Constants.CHOISE_EVENT);
                 eventService.getAllEventsFull().forEach(System.out::println);
-                Integer eventId = Integer.valueOf(scanner.nextLine()) ;
-                System.out.println("Введите место ");
+                Integer eventId = Integer.valueOf(scanner.nextLine());
+                System.out.println(Constants.CHOISE_PLACE);
                 String place = scanner.nextLine();
-                if (eventId != null && place != null  ) {
-                    ticketService.buyTicket(eventId, place, user.getId());
+                boolean IsBuyTicket = false;
+                if (eventId != null && place != null) {
+                    IsBuyTicket = ticketService.buyTicket(eventId, place, user.getId());
+                }
+                try {
+                    if (IsBuyTicket) {
+                        log.info("Пользователь с логином {} купил билет с местом {}", user.getUsername(), place);
+                    } else {
+                        log.error("Ошибка при покупке билета");
+                    }
+                } catch (RuntimeException e) {
+                    log.error("Что-то пошло не так. Обратитесь к администратору системы");
                 }
             } else if (step.equals("3")) {
-                System.out.println("Возврат билета");
+                System.out.println(Constants.RETURN_TICKET);
                 ticketService.getUserTickets(user.getId()).forEach(System.out::println);
-                System.out.println("Выберите мероприятие и введите его номер");
+                System.out.println(Constants.CHOISE_EVENT);
                 eventService.getAllEventsFull().forEach(System.out::println);
-                Integer eventId = Integer.valueOf(scanner.nextLine()) ;
-                System.out.println("Введите место ");
+                Integer eventId = Integer.valueOf(scanner.nextLine());
+                System.out.println(Constants.CHOISE_PLACE);
                 String place = scanner.nextLine();
-                if (eventId != null && place != null  ) {
-                    ticketService.returnTicket(eventId, place, user.getId());
+                boolean IsReturnTicket = false;
+                if (eventId != null && place != null) {
+                    IsReturnTicket = ticketService.returnTicket(eventId, place, user.getId());
+                }
+                try {
+                    if (IsReturnTicket) {
+                        log.info("Пользователь с логином {} вернул билет с местом {}", user.getUsername(), place);
+                    } else {
+                        log.error("Ошибка при возврате билета");
+                    }
+                } catch (RuntimeException e) {
+                    log.error("Что-то пошло не так. Обратитесь к администратору системы");
                 }
             } else if (step.equals("4")) {
-                System.out.println("Просмотр купленных билетов: ");
+                System.out.println(Constants.VIEW_TICKETS);
                 ticketService.getUserTickets(user.getId()).forEach(System.out::println);
             } else if (step.equals("0")) {
                 GlobalController.start();
                 break;
-                //Вызов операции удаления товара
             }
-
         }
     }
 }

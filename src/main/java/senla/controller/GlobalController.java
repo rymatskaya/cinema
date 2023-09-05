@@ -1,6 +1,8 @@
 package senla.controller;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import senla.controller.helper.Constants;
 import senla.model.User;
 import senla.model.UserRole;
 import senla.repository.EventRepository;
@@ -11,12 +13,10 @@ import senla.service.EventService;
 import senla.service.EventServiceImpl;
 import senla.service.UserService;
 import senla.service.UserServiceImpl;
-import senla.util.PasswordsHider;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.*;
-import java.io.*;
+
+@Slf4j
 
 public class GlobalController {
     private static Scanner scanner = new Scanner(System.in);
@@ -32,61 +32,66 @@ public class GlobalController {
 
         while (true) {
 
-            System.out.println("""
-                    Добро пожаловать!
-                    1 - регистрация
-                    2 - вход
-                    3 - просмотр мероприятий
-                    0 - выйти
-                    """);
-            System.out.print("Выберите пункт меню: ");
+            System.out.println(Constants.MAIN_MENU);
+            log.info("Вывод главного меню");
+            System.out.print(Constants.CHOISE);
             String stap = scanner.nextLine();
 
             switch (stap) {
                 case "1" -> {
-                    System.out.println("Меню регистрации");
-                    System.out.println("Введите логин:");
+                    log.info(Constants.REGISTRATION_MENU);
+                    System.out.println(Constants.REGISTRATION_MENU);
+                    System.out.println(Constants.INPUT_LOGIN);
                     String username = scanner.nextLine();
-                    System.out.println("Введите пароль:");
+                    System.out.println(Constants.INPUT_PASSWORD);
                     String password = scanner.nextLine();
-                    System.out.println("Введите email:");
+                    System.out.println(Constants.INPUT_EMAIL);
                     String email = scanner.nextLine();
                     User user = new User(username, password, email);
-                    userService.create(user);
+                    try {
+                        if (userService.create(user)) {
+                            log.info("Пользователь с логином {} успешно создан", username);
+                        } else {
+                            log.error("Не удалось создать пользователя с логином {}", username);
+                        }
+                    } catch (RuntimeException e) {
+                        log.error("Регистрация не работает. Обратитесь к администратору системы");
+                    }
                 }
                 case "2" -> {
-                    System.out.println("Меню входа");
-                    System.out.println("Введите логин:");
+                    log.info(Constants.INPUT_MENU);
+                    System.out.println(Constants.INPUT_MENU);
+                    System.out.println(Constants.INPUT_LOGIN);
                     String username = scanner.nextLine();
-                    System.out.println("Введите пароль:");
+                    System.out.println(Constants.INPUT_PASSWORD);
                     String password = scanner.nextLine();
-//                    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//                    System.out.print("Enter username: ");
-//                    String username = in.readLine();
-//                    Thread hide = new PasswordsHider("Enter password: ");
-//                    hide.start();
-//                    String password = in.readLine();
-//                    hide.interrupt();
 
-                    System.out.println("Вывод меню в зависимости от роли");
                     user = userService.getUserByLoginPassword(username, password)
                             .orElseThrow(() -> new RuntimeException(String.format("Пользователя " +
                                     "с логином %s и паролем %s не найдено ", username, password)));
+                    try {
+                        if (user != null) {
+                            log.info("Пользователь с логином {} успешно авторизован", username);
+                        } else {
+                            log.error("Пользователь с логином {} не существует", username);
+                        }
+                    } catch (RuntimeException e) {
+                        log.error("Авторизация не работает. Обратитесь к администратору системы");
+                    }
 
                     switch (user.getRole()) {
                         case USER -> MenuUser.menuUser();
                         case MANAGER -> MenuManager.MenuManager();
                         case ADMIN -> MenuAdmin.menuAdmin();
                     }
-
                 }
-
                 case "3" -> {
-                    System.out.println("Просмотр мероприятий");
+                    System.out.println(Constants.VIEW_EVENTS);
+                    log.info(Constants.VIEW_EVENTS);
                     eventService.getAllEventsFull().forEach(System.out::println);
                 }
                 case "0" -> {
-                    System.out.println("Выход");
+                    System.out.println(Constants.EXIT);
                     return;
                 }
 
