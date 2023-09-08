@@ -69,7 +69,8 @@ public class Ticket {
                 " код пользователя = " + userId +
                 ", код сеанса = " + eventId +
                 ", цена = " + price +
-                ", продано = " + sold ;
+                ", продано = " + sold +
+                ", место = " + place;
     }
 
     public Ticket() {

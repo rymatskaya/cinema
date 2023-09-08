@@ -21,7 +21,6 @@ public class TicketRepositoryImpl implements TicketRepository {
         String place = ticket.getPlace();
         Integer eventId = ticket.getEventId();
         boolean IsNotExistsTicket = checkTicketByEventAndPlace(eventId, place);
-        System.out.println("IsNotExistsTicket=" + IsNotExistsTicket);
 
         try (Connection connection = ConnectionManager.open()) {
 
@@ -53,13 +52,7 @@ public class TicketRepositoryImpl implements TicketRepository {
             statement.setString(1, String.valueOf(idEvent));
             statement.setString(2, String.valueOf(place));
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            System.out.println("i=" + i);
-            if (i != 0) {
-                System.out.printf("Билет с таким местом %s на этот сеанс существует!", place);
+            if (resultSet.next()) {
                 return true;
             } else return false;
         } catch (SQLException e) {
@@ -90,11 +83,9 @@ public class TicketRepositoryImpl implements TicketRepository {
     @Override
     public boolean buyTicket(Integer eventId, String place, Integer userId) {
         boolean IsNotExistsTicket = checkTicketByEventAndPlace(eventId, place);
-        // System.out.println("IsNotExistsTicket=" + IsNotExistsTicket);
         Ticket ticket = getTicketByPlaceAndEvent(place, eventId);
 
         boolean IsNotSoldTicket = checkTicketBySold(ticket.getTicketId());
-        // System.out.println("IsNotSoldTicket=" + IsNotExistsTicket);
 
         try (Connection connection = ConnectionManager.open()) {
             if (IsNotExistsTicket == true && IsNotSoldTicket == false) {
@@ -120,7 +111,6 @@ public class TicketRepositoryImpl implements TicketRepository {
         Ticket ticket = getTicketByPlaceAndEvent(place, eventId);
 
         boolean IsNotSoldTicket = checkTicketBySold(ticket.getTicketId());
-
 
         try (Connection connection = ConnectionManager.open()) {
             if (IsNotExistsTicket == true && IsNotSoldTicket == true) {
@@ -149,19 +139,14 @@ public class TicketRepositoryImpl implements TicketRepository {
                     " AND sold=1");
             statement.setString(1, String.valueOf(Id));
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            if (i != 0) {
+            if (resultSet.next()) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
-
 
 
     @Override
@@ -213,7 +198,6 @@ public class TicketRepositoryImpl implements TicketRepository {
                 ticket = entity;
                 return ticket;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -248,13 +232,9 @@ public class TicketRepositoryImpl implements TicketRepository {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM ticket WHERE ticketId=?");
             statement.setString(1, String.valueOf(Id));
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            if (i != 0) {
+            if (resultSet.next()) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -330,12 +310,11 @@ public class TicketRepositoryImpl implements TicketRepository {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String TicketId = resultSet.getString("ticketId");
-                Integer idUser =  Integer.valueOf( resultSet.getString("ticketId"));
+                Integer idUser = Integer.valueOf(resultSet.getString("ticketId"));
                 String eventId = resultSet.getString("eventId");
                 String price = resultSet.getString("price");
                 String sold = String.valueOf(1);
                 String movie = resultSet.getString("Title");
-                ;
                 String place = resultSet.getString("place");
                 String MovieDateTime = resultSet.getString("MovieDateTime");
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

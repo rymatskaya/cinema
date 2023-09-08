@@ -3,10 +3,12 @@ package senla.repository;
 import senla.model.User;
 import senla.model.UserRole;
 import senla.util.ConnectionManager;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import static senla.util.SecurityUtil.passwordEncoder;
 
 public class UserRepositoryImpl implements UserRepository {
@@ -30,7 +32,6 @@ public class UserRepositoryImpl implements UserRepository {
                 user = Optional.of(entity);
                 return user;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +60,6 @@ public class UserRepositoryImpl implements UserRepository {
                     return user;
                 }
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -84,7 +84,6 @@ public class UserRepositoryImpl implements UserRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -96,15 +95,9 @@ public class UserRepositoryImpl implements UserRepository {
                     "username=?");
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-
-            if (i != 0) {
-                System.out.printf("Пользователь с именем %s существует!", username);
+            if (resultSet.next()) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -158,8 +151,7 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean create(User user) {
         String username = user.getUsername();
         boolean IsNotExistsUser = checkUserByLogin(username);
-        //System.out.println("IsNotExistsUser=" + IsNotExistsUser);
-       try (Connection connection = ConnectionManager.open()) {
+        try (Connection connection = ConnectionManager.open()) {
 
             if (IsNotExistsUser == false) {
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email, role) " +
@@ -174,7 +166,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return true;
             } else
                 throw new RuntimeException(String.format("Пользователь существует %s ", username));
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -185,17 +176,13 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean createByAdmin(User user) {
         String username = user.getUsername();
         boolean IsNotExistsUser = checkUserByLogin(username);
-        System.out.println("IsNotExistsUser=" + IsNotExistsUser);
 
         try (Connection connection = ConnectionManager.open()) {
 
-            //   PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email) " +
-            //           "VALUES ('Alex','1221','emailTest@mail.com')");
             if (IsNotExistsUser == false) {
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO person (username, password, email, role) " +
                         "VALUES (?,?,?,?)");
                 statement.setString(1, user.getUsername());
-                //statement.setString(2, user.getPassword());
                 String encodedPassword = passwordEncoder.encode(user.getPassword());
                 statement.setString(2, encodedPassword);
                 statement.setString(3, user.getEmail());
@@ -205,7 +192,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return true;
             } else
                 throw new RuntimeException(String.format("Пользователь существует %s ", username));
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -230,17 +216,15 @@ public class UserRepositoryImpl implements UserRepository {
                 statement.setString(3, email);
                 try {
                     statement.setString(4, String.valueOf(role));
-                } catch (Exception e){
+                } catch (Exception e) {
                     new Exception("Неверно введена роль");
                 }
-
                 statement.setString(5, String.valueOf(id));
                 statement.executeUpdate();
                 System.out.println("Пользователь успешно обновлен!");
                 return true;
             } else
                 throw new RuntimeException(String.format("Не удалось обновить пользователя %s ", username));
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -263,7 +247,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return true;
             } else
                 throw new RuntimeException(String.format("Не удалось удалить пользователя %s ", id));
-
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,7 +1,6 @@
 package senla.repository;
 
 import senla.model.Movie;
-import senla.model.User;
 import senla.util.ConnectionManager;
 
 import java.sql.Connection;
@@ -17,7 +16,6 @@ public class MovieRepositoryImpl implements MovieRepository {
     public boolean createMovie(Movie movie) {
         String title = movie.getTitle();
         boolean IsNotExistsMovie = checkMovieByTitle(title);
-        System.out.println("IsNotExistsMovie=" + IsNotExistsMovie);
 
         try (Connection connection = ConnectionManager.open()) {
 
@@ -41,7 +39,6 @@ public class MovieRepositoryImpl implements MovieRepository {
     public boolean updateMovie(Integer movieId, String title) {
 
         boolean IsNotExistsMovie = checkMovieByTitle(title);
-        //System.out.println("IsNotExistsMovie=" + IsNotExistsMovie);
 
         try (Connection connection = ConnectionManager.open()) {
             if (IsNotExistsMovie == false) {
@@ -66,13 +63,7 @@ public class MovieRepositoryImpl implements MovieRepository {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM movie WHERE Title like ?");
             statement.setString(1, title);
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            //System.out.println("i="+i);
-            if (i != 0) {
-                System.out.printf("Фильм с таким названием %s существует!", title);
+            if (resultSet.next()) {
                 return true;
             } else return false;
         } catch (SQLException e) {
@@ -134,12 +125,9 @@ public class MovieRepositoryImpl implements MovieRepository {
             statement.setString(1, String.valueOf(Id));
             ResultSet resultSet = statement.executeQuery();
             int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            if (i != 0) {
+            if (resultSet.next()) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

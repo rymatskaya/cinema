@@ -21,7 +21,6 @@ public class EventRepositoryImpl implements EventRepository {
         Integer idMovie = event.getMovieId();
         LocalDateTime eventDateTime = event.getMovieDateTime();
         boolean IsNotExistsEvent = checkEventByMovieAndTime(idMovie, eventDateTime);
-        System.out.println("IsNotExistsEvent=" + IsNotExistsEvent);
 
         try (Connection connection = ConnectionManager.open()) {
 
@@ -44,7 +43,6 @@ public class EventRepositoryImpl implements EventRepository {
     @Override
     public boolean updateEvent(Integer evenId, Integer movieId, LocalDateTime movieDateTime) {
         boolean IsNotExistsEvent = checkEventById(evenId);
-        System.out.println("IsNotExistsEvent=" + IsNotExistsEvent);
 
         try (Connection connection = ConnectionManager.open()) {
             if (IsNotExistsEvent == true) {
@@ -93,19 +91,14 @@ public class EventRepositoryImpl implements EventRepository {
             PreparedStatement statement = connection.prepareStatement("SELECT * FROM event WHERE eventId=?");
             statement.setString(1, String.valueOf(Id));
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            if (i != 0) {
+            if ((resultSet.next())) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
-
 
     @Override
     public boolean checkEventByMovieAndTime(Integer idMovie, LocalDateTime eventDateTime) {
@@ -116,15 +109,9 @@ public class EventRepositoryImpl implements EventRepository {
             statement.setString(1, String.valueOf(idMovie));
             statement.setString(2, String.valueOf(eventDateTime));
             ResultSet resultSet = statement.executeQuery();
-            int i = 0;
-            while (resultSet.next()) {
-                i++;
-            }
-            System.out.println("i=" + i);
-            if (i != 0) {
-                System.out.printf("Событие с таким фильмом и временем %s существует!", eventDateTime);
+            if ((resultSet.next())) {
                 return true;
-            } else return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -165,7 +152,7 @@ public class EventRepositoryImpl implements EventRepository {
                 String EventId = resultSet.getString("EventId");
                 String MovieId = resultSet.getString("MovieId");
                 String MovieDateTime = resultSet.getString("MovieDateTime");
-                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 LocalDateTime parse = LocalDateTime.parse(MovieDateTime, formatter);
                 Event event = new Event(Integer.valueOf(EventId), Integer.valueOf(MovieId), parse);
                 events.add(event);
@@ -187,7 +174,7 @@ public class EventRepositoryImpl implements EventRepository {
                 String EventId = resultSet.getString("EventId");
                 String Movie = resultSet.getString("Title");
                 String MovieDateTime = resultSet.getString("MovieDateTime");
-                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 LocalDateTime parse = LocalDateTime.parse(MovieDateTime, formatter);
                 EventList event = new EventList(Integer.valueOf(EventId), Movie, parse);
                 events.add(event);
