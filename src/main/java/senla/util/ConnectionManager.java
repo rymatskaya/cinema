@@ -9,11 +9,6 @@ public final class ConnectionManager {
     private static final String USERNAME_KEY = "db.username";
     private static final String PASSWORD_KEY = "db.password";
 
-//    static {
-//        loadDriver();
-//
-//    }
-
     public static Connection open() {
         try {
             return DriverManager.getConnection(
@@ -35,7 +30,6 @@ public final class ConnectionManager {
         }
     }
     private ConnectionManager(){
-
     }
 
 }

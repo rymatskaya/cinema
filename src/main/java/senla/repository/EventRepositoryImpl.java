@@ -165,7 +165,7 @@ public class EventRepositoryImpl implements EventRepository {
                 String EventId = resultSet.getString("EventId");
                 String MovieId = resultSet.getString("MovieId");
                 String MovieDateTime = resultSet.getString("MovieDateTime");
-                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+                DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 LocalDateTime parse = LocalDateTime.parse(MovieDateTime, formatter);
                 Event event = new Event(Integer.valueOf(EventId), Integer.valueOf(MovieId), parse);
                 events.add(event);

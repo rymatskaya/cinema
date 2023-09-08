@@ -24,7 +24,7 @@ public interface TicketRepository {
 
     boolean checkTicketBySold(Integer Id);
     boolean checkTicketById(Integer Id);
-
+    List<TicketList> getTicketsBySold(Integer idEvent);
     List<Ticket> getAllTickets();
     List<TicketList> getUserTickets(Integer userId);
 }

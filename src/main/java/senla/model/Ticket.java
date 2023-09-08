@@ -65,7 +65,7 @@ public class Ticket {
 
     @Override
     public String toString() {
-        return "Билет : " +
+        return "Билет "+ ticketId + ":" +
                 " код пользователя = " + userId +
                 ", код сеанса = " + eventId +
                 ", цена = " + price +

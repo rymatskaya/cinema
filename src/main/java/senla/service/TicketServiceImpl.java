@@ -53,6 +53,10 @@ public class TicketServiceImpl implements TicketService{
         return ticketRepository.getAllTickets();
     }
     @Override
+    public List<TicketList> getTicketsBySold(Integer idEvent){
+        return ticketRepository.getTicketsBySold(idEvent);
+    }
+    @Override
     public List<TicketList> getUserTickets(Integer userId)  {
         return ticketRepository.getUserTickets(userId);
     }

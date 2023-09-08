@@ -3,8 +3,8 @@ package senla.controller;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import senla.controller.helper.Constants;
+import senla.controller.helper.Functions;
 import senla.model.User;
-import senla.model.UserRole;
 import senla.repository.EventRepository;
 import senla.repository.EventRepositoryImpl;
 import senla.repository.UserRepository;
@@ -35,28 +35,12 @@ public class GlobalController {
             System.out.println(Constants.MAIN_MENU);
             log.info("Вывод главного меню");
             System.out.print(Constants.CHOISE);
-            String stap = scanner.nextLine();
+            String step = scanner.nextLine();
 
-            switch (stap) {
+            switch (step) {
                 case "1" -> {
                     log.info(Constants.REGISTRATION_MENU);
-                    System.out.println(Constants.REGISTRATION_MENU);
-                    System.out.println(Constants.INPUT_LOGIN);
-                    String username = scanner.nextLine();
-                    System.out.println(Constants.INPUT_PASSWORD);
-                    String password = scanner.nextLine();
-                    System.out.println(Constants.INPUT_EMAIL);
-                    String email = scanner.nextLine();
-                    User user = new User(username, password, email);
-                    try {
-                        if (userService.create(user)) {
-                            log.info("Пользователь с логином {} успешно создан", username);
-                        } else {
-                            log.error("Не удалось создать пользователя с логином {}", username);
-                        }
-                    } catch (RuntimeException e) {
-                        log.error("Регистрация не работает. Обратитесь к администратору системы");
-                    }
+                    Functions.Registration(userService);
                 }
                 case "2" -> {
                     log.info(Constants.INPUT_MENU);
@@ -94,7 +78,7 @@ public class GlobalController {
                     System.out.println(Constants.EXIT);
                     return;
                 }
-
+                default -> System.out.println("Нет такого пункта меню. Попробуйте еще раз.");
             }
         }
     }
